@@ -129,6 +129,10 @@ jobs:
         touch deb_root/usr/share/icons/hicolor/256x256/apps/pomotime.png
 
         dpkg-deb --build deb_root pomotime_1.0.0_amd64.deb
+        
+        # Move generated packages to root directory
+        mv pomotime_1.0.0_amd64.deb ./
+        mv PomoTime-x86_64.AppImage ./ || true
 
     - name: Upload Linux Packages
       uses: actions/upload-artifact@v4
