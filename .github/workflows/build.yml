@@ -1,0 +1,139 @@
+name: Build Python Executable and Linux Packages
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-cross-platform:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller
+
+    - name: Build Executable with PyInstaller
+      run: |
+        pyinstaller --noconsole --onefile --name PomoTime pomotime.py
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PomoTime-executable-${{ matrix.os }}
+        path: |
+          dist/PomoTime
+          dist/PomoTime.exe
+          dist/PomoTime.app
+        if-no-files-found: ignore
+
+  build-linux-packages:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install System & Python Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y patchelf desktop-file-utils libglib2.0-0
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller
+
+    - name: Build Standalone Binary with PyInstaller
+      run: |
+        pyinstaller --noconsole --onefile --name PomoTime pomotime.py
+
+    - name: Create AppImage
+      run: |
+        # Download linuxdeploy and linuxdeploy-plugin-appimage
+        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
+        chmod +x linuxdeploy*.AppImage
+
+        # Set up AppDir structure
+        mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+        cp dist/PomoTime AppDir/usr/bin/pomotime
+
+        # Create desktop entry
+        cat << 'EOF' > AppDir/usr/share/applications/pomotime.desktop
+        [Desktop Entry]
+        Type=Application
+        Name=PomoTime
+        Exec=pomotime
+        Icon=pomotime
+        Categories=Utility;Timer;
+        EOF
+        cp AppDir/usr/share/applications/pomotime.desktop pomotime.desktop
+
+        # Create dummy icon if missing
+        convert -size 256x256 xc:#3B82F6 AppDir/usr/share/icons/hicolor/256x256/apps/pomotime.png || touch AppDir/usr/share/icons/hicolor/256x256/apps/pomotime.png
+
+        # Build AppImage
+        export ARCH=x86_64
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+        mv PomoTime*.AppImage PomoTime-x86_64.AppImage
+
+    - name: Build DEB Package
+      run: |
+        # Setup Debian package structure
+        mkdir -p deb_root/DEBIAN deb_root/usr/bin deb_root/usr/share/applications deb_root/usr/share/icons/hicolor/256x256/apps
+        
+        cat << 'EOF' > deb_root/DEBIAN/control
+        Package: pomotime
+        Version: 1.0.0
+        Section: utils
+        Priority: optional
+        Architecture: amd64
+        Maintainer: PomoTime Team <support@pomotime.local>
+        Description: Professional Pomodoro Timer Application
+         A professional, native Python desktop Pomodoro timer featuring focus/break sessions,
+         mini-mode floating widget, system tray integration, multilingual RTL support, and statistics.
+        EOF
+
+        cp dist/PomoTime deb_root/usr/bin/pomotime
+        chmod 755 deb_root/usr/bin/pomotime
+
+        cat << 'EOF' > deb_root/usr/share/applications/pomotime.desktop
+        [Desktop Entry]
+        Type=Application
+        Name=PomoTime
+        Exec=pomotime
+        Icon=pomotime
+        Categories=Utility;Timer;
+        EOF
+
+        touch deb_root/usr/share/icons/hicolor/256x256/apps/pomotime.png
+
+        dpkg-deb --build deb_root pomotime_1.0.0_amd64.deb
+
+    - name: Upload Linux Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: PomoTime-Linux-Packages
+        path: |
+          PomoTime-x86_64.AppImage
+          pomotime_1.0.0_amd64.deb
