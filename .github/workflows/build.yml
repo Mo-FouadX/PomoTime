@@ -1,141 +1,249 @@
-name: Build Python Executable and Linux Packages
+name: Build PomoTime
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build-cross-platform:
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install PyQt6 pyinstaller
-
-    - name: Build Executable with PyInstaller
-      run: |
-        pyinstaller --noconsole --onefile --name PomoTime pomotime.py
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: PomoTime-executable-${{ matrix.os }}
-        path: |
-          dist/PomoTime
-          dist/PomoTime.exe
-          dist/PomoTime.app
-        if-no-files-found: ignore
-
-  build-linux-packages:
+  smoke-test:
+    name: Syntax & Import Check
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    - name: Install System & Python Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y patchelf desktop-file-utils libglib2.0-0
-        python -m pip install --upgrade pip
-        pip install PyQt6 pyinstaller
+      - name: Install System Libraries (Qt runtime)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxcb-cursor0 libxkbcommon-x11-0 libegl1 libgl1 \
+            libpulse-mainloop-glib0 libpulse0 alsa-utils ffmpeg
 
-    - name: Build Standalone Binary with PyInstaller
-      run: |
-        pyinstaller --noconsole --onefile --name PomoTime pomotime.py
+      - name: Install Python Requirements
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Create AppImage
-      run: |
-        # Download linuxdeploy and linuxdeploy-plugin-appimage
-        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-        wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
-        chmod +x linuxdeploy*.AppImage
+      - name: Byte-compile (syntax check)
+        run: python3 -m py_compile pomotime.py && echo "Syntax OK"
 
-        # Set up AppDir structure
-        mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
-        cp dist/PomoTime AppDir/usr/bin/pomotime
+      - name: Headless import smoke test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python3 - <<'PY'
+          import sys
+          from PyQt6.QtWidgets import QApplication
+          from pomotime import PomoTimeApp, CircularTimerWidget, FloatingMiniWidget, generate_wav_file
+          app = QApplication(sys.argv)
+          w = PomoTimeApp()
+          assert hasattr(w, "timer")
+          assert hasattr(w, "circular_timer")
+          assert hasattr(w, "task_input")
+          print("PomoTimeApp instantiated in offscreen mode — OK")
+          PY
 
-        # Create desktop entry
-        cat << 'EOF' > AppDir/usr/share/applications/pomotime.desktop
-        [Desktop Entry]
-        Type=Application
-        Name=PomoTime
-        Exec=pomotime
-        Icon=pomotime
-        Categories=Utility;Timer;
-        EOF
-        cp AppDir/usr/share/applications/pomotime.desktop pomotime.desktop
+  build-linux-packages:
+    name: Build AppImage & .deb
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-        # Create dummy icon if missing
-        convert -size 256x256 xc:#3B82F6 AppDir/usr/share/icons/hicolor/256x256/apps/pomotime.png || touch AppDir/usr/share/icons/hicolor/256x256/apps/pomotime.png
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-        # Build AppImage
-        export ARCH=x86_64
-        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
-        mv PomoTime*.AppImage PomoTime-x86_64.AppImage
+      - name: Install Build & Runtime Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            binutils fakeroot dpkg-dev desktop-file-utils zsync file wget \
+            libxcb-cursor0 libxkbcommon-x11-0 libegl1 libgl1 \
+            libpulse-mainloop-glib0 libpulse0 alsa-utils ffmpeg
+          pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
 
-    - name: Build DEB Package
-      run: |
-        # Setup Debian package structure
-        mkdir -p deb_root/DEBIAN deb_root/usr/bin deb_root/usr/share/applications deb_root/usr/share/icons/hicolor/256x256/apps
-        
-        cat << 'EOF' > deb_root/DEBIAN/control
-        Package: pomotime
-        Version: 1.0.0
-        Section: utils
-        Priority: optional
-        Architecture: amd64
-        Maintainer: PomoTime Team <support@pomotime.local>
-        Description: Professional Pomodoro Timer Application
-         A professional, native Python desktop Pomodoro timer featuring focus/break sessions,
-         mini-mode floating widget, system tray integration, multilingual RTL support, and statistics.
-        EOF
+      - name: Build Standalone Executable
+        run: |
+          pyinstaller --noconfirm --onefile --windowed \
+            --name pomotime \
+            --add-data "pomotime.py:." \
+            pomotime.py
 
-        cp dist/PomoTime deb_root/usr/bin/pomotime
-        chmod 755 deb_root/usr/bin/pomotime
+      - name: Generate Application Icon (256x256 PNG — pure Qt painter)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python3 - <<'PY'
+          import sys
+          from PyQt6.QtWidgets import QApplication
+          from PyQt6.QtGui import QImage, QPainter, QColor, QPen, QFont
+          from PyQt6.QtCore import Qt, QRectF, QPointF
+          app = QApplication(sys.argv)
 
-        cat << 'EOF' > deb_root/usr/share/applications/pomotime.desktop
-        [Desktop Entry]
-        Type=Application
-        Name=PomoTime
-        Exec=pomotime
-        Icon=pomotime
-        Categories=Utility;Timer;
-        EOF
+          SIZE = 256
+          img = QImage(SIZE, SIZE, QImage.Format.Format_ARGB32)
+          img.fill(Qt.GlobalColor.transparent)
+          p = QPainter(img)
+          p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+          p.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
 
-        touch deb_root/usr/share/icons/hicolor/256x256/apps/pomotime.png
+          # Rounded tomato-red body
+          p.setPen(Qt.PenStyle.NoPen)
+          p.setBrush(QColor("#E8483F"))
+          p.drawRoundedRect(16, 28, 224, 212, 60, 60)
 
-        dpkg-deb --build deb_root pomotime_1.0.0_amd64.deb
-        
-        # Move generated packages to root directory
-        mv pomotime_1.0.0_amd64.deb ./
-        mv PomoTime-x86_64.AppImage ./ || true
+          # Subtle highlight
+          p.setBrush(QColor(255, 255, 255, 38))
+          p.drawEllipse(44, 52, 120, 180)
 
-    - name: Upload Linux Packages
-      uses: actions/upload-artifact@v4
-      with:
-        name: PomoTime-Linux-Packages
-        path: |
-          PomoTime-x86_64.AppImage
-          pomotime_1.0.0_amd64.deb
+          # Clock face
+          p.setBrush(QColor("#FFFFFF"))
+          p.drawEllipse(56, 56, 144, 144)
+
+          # Tick marks
+          p.setPen(QPen(QColor("#E8483F"), 6))
+          p.setBrush(Qt.BrushStyle.NoBrush)
+          for angle in range(0, 360, 30):
+              p.save()
+              p.translate(SIZE / 2, SIZE / 2)
+              p.rotate(angle)
+              p.drawLine(QPointF(0, -66), QPointF(0, -56))
+              p.restore()
+
+          # Clock hands (25 minutes ~ 150°)
+          p.setPen(QPen(QColor("#1E293B"), 10, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+          p.drawLine(QPointF(128, 128), QPointF(128, 74))
+          p.setPen(QPen(QColor("#E8483F"), 8, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+          p.drawLine(QPointF(128, 128), QPointF(176, 128))
+
+          # Center dot
+          p.setPen(Qt.PenStyle.NoPen)
+          p.setBrush(QColor("#1E293B"))
+          p.drawEllipse(QPointF(128, 128), 9, 9)
+
+          # Stem / leaf
+          p.setPen(QPen(QColor("#2E7D32"), 10, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+          p.drawLine(QPointF(128, 30), QPointF(128, 8))
+          p.setBrush(QColor("#43A047"))
+          p.setPen(Qt.PenStyle.NoPen)
+          p.drawEllipse(112, 4, 56, 20)
+
+          p.end()
+
+          # Save a single canonical 256x256 PNG used by both .deb and AppImage
+          img.save("pomotime.png", "PNG")
+          with open("pomotime.png", "rb") as fh:
+              head = fh.read(8)
+          assert head == b"\x89PNG\r\n\x1a\n", "pomotime.png is not a valid PNG!"
+          print("Generated valid pomotime.png (256x256)")
+          PY
+
+      - name: Assemble AppDir
+        run: |
+          set -e
+          curl -L -o linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy
+
+          mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          cp dist/pomotime AppDir/usr/bin/pomotime
+          cp pomotime.png AppDir/pomotime.png
+          cp pomotime.png AppDir/usr/share/icons/hicolor/256x256/apps/pomotime.png
+
+          cat > AppDir/pomotime.desktop <<'DESK'
+          [Desktop Entry]
+          Type=Application
+          Name=PomoTime
+          Comment=Professional Pomodoro focus timer
+          Exec=pomotime
+          Icon=pomotime
+          Categories=Utility;Office;
+          Terminal=false
+          DESK
+
+      - name: Build AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: |
+          set -e
+          export VERSION="${GITHUB_REF_NAME:-dev}"
+          ./linuxdeploy --appdir AppDir --desktop-file AppDir/pomotime.desktop \
+            --icon-file pomotime.png --output appimage
+          ls -la AppDir/../*.AppImage 2>/dev/null || ls -la *.AppImage
+
+      - name: Build .deb Package
+        run: |
+          set -e
+          VERSION="${GITHUB_REF_NAME:-1.0.0}"
+          VERSION="${VERSION#v}"
+          DEB_VERSION="${VERSION}"
+          ARCH="amd64"
+          PKG_ROOT="deb_root"
+          rm -rf "${PKG_ROOT}"
+
+          mkdir -p "${PKG_ROOT}/DEBIAN"
+          mkdir -p "${PKG_ROOT}/usr/bin"
+          mkdir -p "${PKG_ROOT}/usr/share/applications"
+          mkdir -p "${PKG_ROOT}/usr/share/icons/hicolor/256x256/apps"
+
+          cp dist/pomotime "${PKG_ROOT}/usr/bin/pomotime"
+          chmod 755 "${PKG_ROOT}/usr/bin/pomotime"
+          cp pomotime.png "${PKG_ROOT}/usr/share/icons/hicolor/256x256/apps/pomotime.png"
+
+          cat > "${PKG_ROOT}/usr/share/applications/pomotime.desktop" <<'DESK'
+          [Desktop Entry]
+          Type=Application
+          Name=PomoTime
+          Comment=Professional Pomodoro focus timer
+          Exec=pomotime
+          Icon=pomotime
+          Categories=Utility;Office;
+          Terminal=false
+          DESK
+
+          cat > "${PKG_ROOT}/DEBIAN/control" <<CTRL
+          Package: pomotime
+          Version: ${DEB_VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: ${ARCH}
+          Depends: libxcb-cursor0, libxkbcommon-x11-0, libegl1, libgl1
+          Maintainer: PomoTime Project <noreply@example.com>
+          Description: Professional Pomodoro focus timer built with PyQt6
+           A smart, cross-platform Pomodoro timer with ambient soundscapes,
+           task tracking, floating mini-mode, bilingual RTL support and
+           persistent productivity statistics.
+          CTRL
+
+          dpkg-deb --build --root-owner-group "${PKG_ROOT}" pomotime_${DEB_VERSION}_${ARCH}.deb
+          ls -la pomotime_${DEB_VERSION}_${ARCH}.deb
+
+      - name: Verify Artifacts
+        run: |
+          set -e
+          file pomotime*.deb
+          for f in *.AppImage; do file "$f"; done
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pomotime-linux-packages
+          path: |
+            *.AppImage
+            *.deb
+          if-no-files-found: error
