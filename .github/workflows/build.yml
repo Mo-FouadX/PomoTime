@@ -46,12 +46,15 @@ jobs:
           python3 - <<'PY'
           import sys
           from PyQt6.QtWidgets import QApplication
-          from pomotime import PomoTimeApp, CircularTimerWidget, FloatingMiniWidget, generate_wav_file
+          from pomotime import PomoTimeApp, CircularTimerWidget, FloatingMiniWidget, generate_chime
           app = QApplication(sys.argv)
           w = PomoTimeApp()
           assert hasattr(w, "timer")
           assert hasattr(w, "circular_timer")
           assert hasattr(w, "task_input")
+          assert hasattr(w, "queue_list")
+          assert hasattr(w, "preset_combo")
+          assert hasattr(w, "timer_daily_bar")
           print("PomoTimeApp instantiated in offscreen mode — OK")
           PY
 
@@ -225,9 +228,9 @@ jobs:
           Depends: libxcb-cursor0, libxkbcommon-x11-0, libegl1, libgl1
           Maintainer: PomoTime Project <noreply@example.com>
           Description: Professional Pomodoro focus timer built with PyQt6
-           A smart, cross-platform Pomodoro timer with ambient soundscapes,
-           task tracking, floating mini-mode, bilingual RTL support and
-           persistent productivity statistics.
+           A smart, cross-platform Pomodoro timer with presets, a multi-block
+           session queue, daily focus goals, task tracking, floating mini-mode,
+           bilingual RTL support, CSV session export and persistent statistics.
           CTRL
 
           dpkg-deb --build --root-owner-group "${PKG_ROOT}" pomotime_${DEB_VERSION}_${ARCH}.deb

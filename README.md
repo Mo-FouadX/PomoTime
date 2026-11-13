@@ -21,35 +21,34 @@ python3 pomotime.py
 ## Features & Usage
 
 1. **Focus & Breaks**: Start the 25-minute focus timer or take a 5/15 minute break. Track completed cycles in real-time.
-2. **Mini-Mode**: Click the **"Mini-Mode"** button to collapse into a sleek, floating window that stays on top of all your applications while you work.
-3. **Bilingual & RTL Support**: Switch instantly between English (LTR) and Arabic (RTL) using the language selector. The entire interface, alignment, and typography adjust seamlessly.
-4. **Notifications**: Receive native tray notifications and alerts when your focus or break session finishes.
-5. **Background Soundscapes** (zero external assets):
-   - Select from: *Gentle Rain*, *Quiet Cafe*, *Ocean Waves*, *Brown Noise*, *White Noise*.
-   - Use the volume slider to control ambient audio; pauses during breaks or timer pause.
-6. **Current Task / Focus Goal**: Enter a task above the timer card ("What are you focusing on?") — displayed inside Floating Mini-Mode.
-7. **Statistics Tab**: Total focus time, completed cycles, breaks taken, daily streak, Productivity Score (0–100).
-8. **Settings Tab**:
-   - Duration spinboxes (focus, short break, long break, cycles before long break)
-   - Theme combo (Clean Default, Calm Forest, Midnight Focus, Warm Sunset)
-   - Music combo (none, rain, cafe, waves, brown, white noise)
-   - Ambient volume slider
-   - Auto-start breaks / auto-start focus checkboxes
-   - Current task field
-9. **Keyboard Shortcuts**:
-   - `Space` – Start/Pause
-   - `R` – Reset
-   - `S` – Skip
-   - `M` – Toggle Mini-Mode
-10. **Circular Progress Ring** around the countdown clock (smoothly depletes, color changes between Focus accent and Break green/teal).
+2. **One-Click Presets**: Switch between Classic Pomodoro (25/5/20 ×4), Deep Work (50/10/30 ×2), Quick Sprint (15/3/10 ×4), or your own Custom Queue.
+3. **Session Queue**: Build a multi-block plan of focus sessions and breaks with optional task labels, quick-add patterns, and move/delete/clear controls. The timer advances automatically and shows live progress such as `Queue Step 2 of 7 • Next: Long Break (15m)`.
+4. **Mini-Mode**: Click **Float Mini-Mode** to collapse into a sleek, floating window that stays on top of all your applications. It shows the active task or queue-step task.
+5. **Bilingual & RTL Support**: Switch instantly between English (LTR) and Arabic (RTL) using the language selector. The entire interface, alignment, and typography adjust seamlessly.
+6. **Notifications**: Receive native tray notifications and soft, synthesized completion chimes when your focus, break, or queue finishes.
+7. **Current Task / Focus Goal**: Enter a task above the timer card ("What are you focusing on?") — displayed inside Floating Mini-Mode.
+8. **Daily Focus Goal**: Set a target in Settings and track `Today: 50 / 120 mins • 42%` on the Timer and Statistics tabs. The daily counter resets at midnight while all-time history is preserved.
+9. **Statistics Tab**: Total focus time, completed cycles, breaks taken, Productivity Score (0–100), Daily Goal progress, a scrollable Recent Sessions log, and **Export to CSV**.
+10. **Settings Tab**:
+    - Duration spinboxes (focus, short break, long break, cycles before long break)
+    - Daily Focus Target (minutes)
+    - Theme combo (Clean Default, Calm Forest, Midnight Focus, Warm Sunset)
+    - Auto-start breaks / auto-start focus checkboxes
+11. **Keyboard Shortcuts**:
+    - `Space` – Start/Pause
+    - `R` – Reset
+    - `S` – Skip
+    - `M` – Toggle Mini-Mode
+12. **Circular Progress Ring** around the countdown clock (smoothly depletes, color changes between Focus accent and Break green/teal).
 
 ## Architecture Highlights
 
-- **Sound System**: Cross-platform programmatic WAV generation + playback via `QSoundEffect` (PyQt6.QtMultimedia), fallback to `aplay`/`afplay` (Linux/macOS) and `winsound` (Windows).
-- **Persistent Storage**: `QSettings("PomoTime", "Settings")` for widget values, cycle counts, task history, ambient volume; stats saved at exit/session end.
-- **Daily Focus Stats**: Resets today's total at midnight; keeps all-time totals.
-- **Theme Styling**: Hardcoded inline colors removed; `apply_theme()` controls all widgets cleanly.
-- **RTL Support**: Dynamic layout direction based on language selection; `FloatingMiniWidget` syncs theme dynamically.
+- **Sound System**: Cross-platform synthesized notification chimes + native playback via `paplay`/`aplay` (Linux), `afplay` (macOS), and `winsound` (Windows) — no `QtMultimedia` dependency.
+- **Persistent Storage**: `QSettings("PomoTime", "Settings")` for widget values, cycle counts, theme, daily goal state, task history, preset selection, and the JSON-serialized session queue.
+- **Session Queue Engine**: Blocks store `kind`, `minutes`, and `task`; the timer engine advances through them, logs completed focus sessions, and handles auto-start behavior.
+- **Daily Focus Stats**: Resets today's total at midnight; keeps all-time totals and history.
+- **Theme Styling**: Hardcoded inline colors removed; `apply_theme()` themes progress bars, list widgets, queue controls, and secondary buttons across all four themes.
+- **RTL Support**: Dynamic layout direction based on language selection; `FloatingMiniWidget` syncs direction, text, and the active task.
 
 ## File Structure
 - `pomotime.py`: Main application logic, UI, sound system.
