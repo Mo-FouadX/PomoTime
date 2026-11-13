@@ -1,7 +1,7 @@
 # CONTEXT.md
 
 ## Project Overview
-**PomoTime** is a professional, native Python desktop application designed for focus management using the Pomodoro technique. It combines a clean modern UI with multi-language support (English and Arabic), full Right-to-Left (RTL) layout switching, floating mini-mode ("always on top"), system tray background operation, cycle tracking, customizable session parameters, one-click productivity presets, a commercial-grade multi-block Session Queue, daily focus goals, visual themes, detailed statistics with CSV export, and a built-in sound system using Python's native libraries.
+**PomoTime** is a professional, native Python desktop application designed for focus management using the Pomodoro technique. It combines a clean modern UI with multi-language support (English and Arabic), full Right-to-Left (RTL) layout switching, floating mini-mode ("always on top"), system tray background operation, cycle tracking, customizable session parameters, one-click productivity presets, a commercial-grade multi-block Session Queue, daily focus goals, visual themes, detailed statistics with CSV export, and a built-in sound system using Python's native libraries. **PomoTime is built and supported for Linux only** (`.AppImage`, `.deb`, and source compilation with Python 3.10+ & PyQt6). Windows and macOS support is planned for future releases.
 
 ## Architecture & Technology Stack
 - **Language**: Python 3.10+
@@ -9,7 +9,8 @@
 - **Sound & Alert System**:
   - Soft, musical notification chimes synthesized in pure Python (`math`, `wave`, `struct`) — no audio assets and no `QtMultimedia` dependency.
   - Each chime mixes bell harmonics with a short fade-in, exponential decay, and fade-out to eliminate clicks and pops.
-  - Native players: `paplay`/`aplay` on Linux, `afplay` on macOS, `winsound` on Windows (terminal bell as final fallback).
+  - Native players: `paplay`/`aplay` on Linux (terminal bell as final fallback).
+  - **Platform scope**: Linux only — Windows/macOS playback paths are not required at this stage.
 
 ## Core Sound Architecture (`SOUNDS`)
 The `SOUNDS` dictionary at the top of `pomotime.py` defines notification chimes as note sequences — `(frequency_hz, start_ms, duration_ms, gain)`:

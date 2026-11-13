@@ -228,7 +228,7 @@ jobs:
           Depends: libxcb-cursor0, libxkbcommon-x11-0, libegl1, libgl1
           Maintainer: PomoTime Project <noreply@example.com>
           Description: Professional Pomodoro focus timer built with PyQt6
-           A smart, cross-platform Pomodoro timer with presets, a multi-block
+           A smart, Linux-native Pomodoro timer with presets, a multi-block
            session queue, daily focus goals, task tracking, floating mini-mode,
            bilingual RTL support, CSV session export and persistent statistics.
           CTRL

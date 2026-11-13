@@ -3,7 +3,7 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.5.0+-green.svg)](https://www.pyqt.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platforms: Linux/Windows/macOS](https://img.shields.io/badge/Platform-Linux%20|%20Windows%20|%20macOS-lightgrey.svg)]
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)]
 
 ---
 
@@ -12,6 +12,8 @@
 **PomoTime** is a polished, commercial-grade desktop application built with Python 3 and PyQt6 that helps you manage focus sessions using the proven Pomodoro technique. Combining a clean modern UI with full bilingual support (English/Arabic), Right-to-Left (RTL) layout, floating mini-mode, customizable themes, and a powerful multi-block Session Queue — all without requiring any external multimedia dependencies.
 
 Designed for privacy and performance, PomoTime relies entirely on native system tools and pure Python audio synthesis, making it lightweight, portable, and respectful of your system resources.
+
+**PomoTime is currently built and supported for Linux only** (`.AppImage`, `.deb`, and source compilation with Python 3.10+ & PyQt6). Windows and macOS support is planned for future releases.
 
 ---
 
@@ -71,7 +73,7 @@ Designed for privacy and performance, PomoTime relies entirely on native system 
 ### 📢 Notification Chimes (Zero External Assets)
 - **Soft, synthesized bell tones**: Generated purely in Python (`math`, `wave`, `struct`)
 - **4 distinct sounds**: `click`, `start_focus`, `start_break`, `alert`
-- **Native playback**: `paplay`/`aplay` (Linux), `afplay` (macOS), `winsound` (Windows)
+- **Native playback**: `paplay`/`aplay` on Linux (terminal bell as final fallback)
 - **No QtMultimedia dependency**: Pure Python audio generation only
 
 ### 📌 System Tray & Mini-Mode
@@ -108,10 +110,10 @@ python3 pomotime.py
 ```
 
 ### Building & Distribution
-- **AppImage**: `sudo apt-get install appimagekit && appimagetool pomotime.py`
-- **.deb Package**: Use `dpkg-deb` or build via `linuxdeploy`
-- **.exe Windows**: Use `PyInstaller` or `Nuitka` to compile
-- **GitHub Releases**: Pre-built installers available from the Releases page
+- **AppImage**: Download the pre-built `.AppImage` from [GitHub Releases](https://github.com/Mo-FouadX/PomoTime/releases/latest), or build with `linuxdeploy` + `appimagetool`.
+- **.deb Package**: Download the pre-built `.deb` from [GitHub Releases](https://github.com/Mo-FouadX/PomoTime/releases/latest), or build with `dpkg-deb` from the CI pipeline.
+- **Source Compilation**: `pip install -r requirements.txt && python3 pomotime.py`
+- **GitHub Releases**: Pre-built Linux installers available from the Releases page.
 
 ### Requirements
 - Python 3.10+
@@ -138,7 +140,7 @@ python3 pomotime.py
 - **Clean code structure** maintainable by human developers
 - **Accessible design** with full bilingual and RTL support
 - **Native performance** without external asset dependencies
-- **Cross-platform compatibility** (Linux, Windows, macOS)
+- **Linux-first architecture**: Optimized for Linux desktop environments (X11/GTK/Qt)
 - **Privacy-respecting architecture**: No external APIs, no telemetry, no background sound servers
 
 The project demonstrates how AI-assisted development can produce production-quality software when guided by experienced product direction and thorough testing on the target platform.

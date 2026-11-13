@@ -60,7 +60,7 @@ python3 pomotime.py
 
 ### Architecture Highlights
 
-- **Sound System**: Soft notification chimes synthesized in pure Python and played through native OS tools (`paplay`/`aplay` on Linux, `afplay` on macOS, `winsound` on Windows) — no `QtMultimedia` dependency.
+- **Sound System**: Soft notification chimes synthesized in pure Python and played through native OS tools (`paplay`/`aplay` on Linux, terminal bell as final fallback) — no `QtMultimedia` dependency.
 - **Persistent Storage**: `QSettings("PomoTime", "Settings")` stores durations, cycle target, current task, theme, automation flags, statistics, daily goal state, task history, preset selection, and the JSON-serialized session queue. Settings are synced immediately on save.
 - **Session Queue Engine**: Queue blocks are dictionaries (`kind`, `minutes`, `task`); the timer engine advances through them, logs completed focus blocks, and triggers the appropriate auto-start behavior.
 - **Daily Focus Stats**: Today's focus time is tracked separately from all-time totals and resets at midnight; all-time totals and history are never reset.
