@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PomoTime – Professional Pomodoro Timer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{font-family:Arial,sans-serif;margin:0;padding:0;background:#f4f4f4;color:#333}
+  header{background:#2563EB;color:#fff;padding:2rem;text-align:center}
+  header h1{margin:0;font-size:2.5rem}
+  header p{margin:0.5rem 0 0;font-size:1.2rem}
+  .container{max-width:1200px;margin:auto;padding:1rem}
+  .hero{display:flex;flex-wrap:wrap;align-items:center;gap:2rem;background:#fff;padding:2rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+  .hero img{max-width:100%;height:auto;border-radius:4px}
+  .hero .text{flex:1 1 300px}
+  .hero .buttons{margin-top:1rem}
+  .hero .buttons a{display:inline-block;margin-right:0.5rem;padding:0.75rem 1.5rem;background:#2563EB;color:#fff;border-radius:4px;text-decoration:none;font-weight:bold}
+  .hero .buttons a:hover{background:#1d4ed8}
+  .features{display:grid;gap:1.5rem;margin-top:2rem}
+  @media(min-width:600px){.features{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:900px){.features{grid-template-columns:repeat(3,1fr)}}
+  .feature{background:#fff;padding:1.5rem;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+  .feature h3{margin-top:0;font-size:1.25rem;color:#2563EB}
+  footer{background:#222;color:#ccc;text-align:center;padding:1rem;margin-top:2rem}
+  footer a{color:#fff;text-decoration:none}
+  footer a:hover{color:#ddd}
+  .lang-toggle{position:fixed;top:1rem;right:1rem;background:#2563EB;color:#fff;padding:0.5rem;border-radius:4px;cursor:pointer}
+  .lang-toggle:hover{background:#1d4ed8}
+  .arabic{display:none}
+</style>
+<script>
+function toggleLang(){
+  var en=document.querySelectorAll('.en');
+  var ar=document.querySelectorAll('.arabic');
+  en.forEach(el=>el.style.display='');
+  ar.forEach(el=>el.style.display='none');
+  if(document.body.dataset.lang==='ar'){
+    en.forEach(el=>el.style.display='none');
+    ar.forEach(el=>el.style.display='');
+    document.body.dataset.lang='en';
+  }else{document.body.dataset.lang='ar'}
+}
+window.addEventListener('load',()=>{document.body.dataset.lang='en';});
+</script>
+</head>
+<body>
+<div class="lang-toggle" onclick="toggleLang()">العربية/English</div>
+<header>
+  <h1 class="en">PomoTime</h1>
+  <h1 class="arabic" style="display:none;">بوموتايم</h1>
+  <p class="en">Professional Pomodoro Timer for Focus Management</p>
+  <p class="arabic" style="display:none;">مؤقت بومودورو احترافي لإدارة التركيز</p>
+</header>
+<div class="container">
+  <section class="hero">
+    <div class="text">
+      <h2 class="en">Take control of your focus sessions.</h2>
+      <h2 class="arabic" style="display:none;">تحكم في جلسات تركيزك.</h2>
+      <p class="en">Customizable timers, multi-block queues, bilingual support, and more.</p>
+      <p class="arabic" style="display:none;">مؤقتات قابل للتخصيص، قوائم متعددة، دعم ثنائي اللغة، وأكثر.</p>
+      <div class="buttons">
+        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest" target="_blank" class="en">Download</a>
+        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest" target="_blank" class="arabic" style="display:none;">تنزيل</a>
+      </div>
+    </div>
+    <div class="images">
+      <img src="../assets/screenshots/timer_en.png" alt="Timer" style="width:200px;margin-bottom:1rem;">
+      <img src="../assets/screenshots/timer_ar_rtl.png" alt="Timer RTL" style="width:200px;">
+    </div>
+  </section>
+  <section class="features">
+    <div class="feature">
+      <h3 class="en">Custom Multi‑Cycle Queue</h3>
+      <h3 class="arabic" style="display:none;">قائمة متعددة الدورات مخصصة</h3>
+      <p class="en">Plan focus blocks, short and long breaks with optional task labels.</p>
+      <p class="arabic" style="display:none;">خطط لكتل التركيز، الاستراحات القصيرة والطويلة مع تسميات اختيارية للمهمة.</p>
+    </div>
+    <div class="feature">
+      <h3 class="en">Floating Mini‑Mode</h3>
+      <h3 class="arabic" style="display:none;">الوضع المصغر العائم</h3>
+      <p class="en">Always‑on‑top widget showing time, stage, and task.</p>
+      <p class="arabic" style="display:none;">عنصر دائم في المقدمة يُظهر الوقت، المرحلة، والمهمة.</p>
+    </div>
+    <div class="feature">
+      <h3 class="en">Bilingual EN/AR RTL</h3>
+      <h3 class="arabic" style="display:none;">اللغات الإنجليزية/العربية مع RTL</h3>
+      <p class="en">Switch instantly between English and Arabic layout.</p>
+      <p class="arabic" style="display:none;">التبديل الفوري بين الإنجليزية والعربية مع تخطيط من اليمين إلى اليسار.</p>
+    </div>
+    <div class="feature">
+      <h3 class="en">Four Visual Themes</h3>
+      <h3 class="arabic" style="display:none;">أربع سمات بصرية</h3>
+      <p class="en">Default, Forest, Midnight, Sunset – choose what feels right.</p>
+      <p class="arabic" style="display:none;">الافتراضي، الغابة، منتصف الليل، الغروب – اختر ما يناسبك.</p>
+    </div>
+    <div class="feature">
+      <h3 class="en">Zero‑Asset Chimes</h3>
+      <h3 class="arabic" style="display:none;">نغمات بدون أصول</h3>
+      <p class="en">Pure Python synthesized bell tones – no external files.</p>
+      <p class="arabic" style="display:none;">نغمات طبلة معتمدة على Python فقط – لا ملفات خارجية.</p>
+    </div>
+    <div class="feature">
+      <h3 class="en">Daily Focus Goal & CSV Export</h3>
+      <h3 class="arabic" style="display:none;">هدف تركيز يومي وتصدير CSV</h3>
+      <p class="en">Track daily focus minutes and export session history.</p>
+      <p class="arabic" style="display:none;">تتبع دقائق التركيز اليومية وتصدير تاريخ الجلسات.</p>
+    </div>
+  </section>
+</div>
+<footer>
+  <p class="en">© 2026 Mohamed Fouad – MIT License. <a href="https://github.com/Mo-FouadX/PomoTime" target="_blank">GitHub</a></p>
+  <p class="arabic" style="display:none;">© 2026 محمد فؤاد – رخصة MIT. <a href="https://github.com/Mo-FouadX/PomoTime" target="_blank">GitHub</a></p>
+</footer>
+</body>
+</html>
