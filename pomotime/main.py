@@ -38,17 +38,35 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont, QIcon, QPalette, QColor, QAction, QFontDatabase, QPixmap, QBrush, QPainter, QPen, QKeySequence
 
 # Local package modules
-from .i18n import (
-    get_translation as t,
-    SUPPORTED_LANGUAGES,
-    DEFAULT_LANGUAGE,
-    LANGUAGE_DIRECTIONS,
-    LANGUAGE_NAMES,
-)
-from .audio import play_tone, SOUNDS
-from .themes import THEMES, DEFAULT_THEME
-from .storage import SettingsStore
-from .queue import SessionQueue
+# Supports both `python3 -m pomotime.main` and `python3 pomotime/main.py`.
+try:
+    from .i18n import (
+        get_translation as t,
+        SUPPORTED_LANGUAGES,
+        DEFAULT_LANGUAGE,
+        LANGUAGE_DIRECTIONS,
+        LANGUAGE_NAMES,
+    )
+    from .audio import play_tone, SOUNDS
+    from .themes import THEMES, DEFAULT_THEME
+    from .storage import SettingsStore
+    from .queue import SessionQueue
+except ImportError:
+    import os
+    import sys
+
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from pomotime.i18n import (
+        get_translation as t,
+        SUPPORTED_LANGUAGES,
+        DEFAULT_LANGUAGE,
+        LANGUAGE_DIRECTIONS,
+        LANGUAGE_NAMES,
+    )
+    from pomotime.audio import play_tone, SOUNDS
+    from pomotime.themes import THEMES, DEFAULT_THEME
+    from pomotime.storage import SettingsStore
+    from pomotime.queue import SessionQueue
 
 
 class CircularTimerWidget(QWidget):
