@@ -34,8 +34,9 @@ from PyQt6.QtWidgets import (
     QSystemTrayIcon, QMenu, QMessageBox, QSpinBox, QGridLayout,
     QTabWidget, QGraphicsDropShadowEffect, QFileDialog, QStyle,
     QLineEdit, QCheckBox, QListWidget, QListWidgetItem, QProgressBar,
+    QColorDialog,
 )
-from PyQt6.QtGui import QFont, QIcon, QPalette, QColor, QAction, QFontDatabase, QPixmap, QBrush, QPainter, QPen, QKeySequence
+from PyQt6.QtGui import QFont, QIcon, QPalette, QColor, QAction, QFontDatabase, QPixmap, QBrush, QPainter, QPen, QKeySequence, QPainterPath
 
 # Local package modules
 # Supports both `python3 -m pomotime.main` and `python3 pomotime/main.py`.
@@ -310,6 +311,17 @@ class PomoTimeApp(QMainWindow):
         self.streak_days = 0
         self._last_streak_date = None
 
+        # Monthly tracking: { "YYYY-MM": {"subject": minutes, ...}, ... }
+        self.monthly_focus_by_month = {}
+        self.monthly_goal_hours = 40
+
+        # Custom accent color
+        self.accent_color = ""
+
+        # Welcome / first launch
+        self.first_launch = True
+        self.welcome_shown = False
+
         # Achievements: { badge_id: {"unlocked": bool, "progress": int, "need": int} }
         self.achievements = {
             "first": {"unlocked": False, "progress": 0, "need": 1},
@@ -317,6 +329,7 @@ class PomoTimeApp(QMainWindow):
             "streak7": {"unlocked": False, "progress": 0, "need": 7},
             "hours5": {"unlocked": False, "progress": 0, "need": 300},  # minutes
             "hours10": {"unlocked": False, "progress": 0, "need": 600},  # minutes
+            "monthly": {"unlocked": False, "progress": 0, "need": 1},  # monthly goal completed
         }
 
         # ------------------------------------------------------------------
@@ -773,6 +786,73 @@ class PomoTimeApp(QMainWindow):
 
         self.tabs.addTab(self.weekly_tab, self.t("student_weekly_tab"))
 
+        # ---- NEW: Monthly Stats Tab ----
+        self.monthly_tab_widget = QWidget()
+        monthly_layout = QVBoxLayout(self.monthly_tab_widget)
+        monthly_layout.setSpacing(12)
+        monthly_layout.setContentsMargins(16, 16, 16, 16)
+
+        self.monthly_title = QLabel(self.t("monthly_title"))
+        self.monthly_title.setFont(QFont("Arial", 15, QFont.Weight.Bold))
+        self.monthly_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        monthly_layout.addWidget(self.monthly_title)
+
+        self.monthly_description = QLabel(self.t("monthly_description"))
+        self.monthly_description.setWordWrap(True)
+        self.monthly_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        monthly_layout.addWidget(self.monthly_description)
+
+        monthly_goal_row = QHBoxLayout()
+        monthly_goal_row.setSpacing(8)
+        self.monthly_goal_label = QLabel(self.t("monthly_goal"))
+        self.monthly_goal_spin = QSpinBox()
+        self.monthly_goal_spin.setRange(1, 744)
+        self.monthly_goal_spin.setValue(self.monthly_goal_hours)
+        self.monthly_goal_spin.setSuffix(" " + self.t("student_blocks"))
+        self.monthly_goal_spin.valueChanged.connect(self.set_monthly_goal)
+        monthly_goal_row.addWidget(self.monthly_goal_label)
+        monthly_goal_row.addStretch()
+        monthly_goal_row.addWidget(self.monthly_goal_spin)
+        monthly_layout.addLayout(monthly_goal_row)
+
+        self.monthly_progress_label = QLabel("")
+        self.monthly_progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.monthly_progress_label.setWordWrap(True)
+        self.monthly_progress_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        monthly_layout.addWidget(self.monthly_progress_label)
+
+        self.monthly_bar = QProgressBar()
+        self.monthly_bar.setRange(0, 100)
+        self.monthly_bar.setValue(0)
+        self.monthly_bar.setTextVisible(False)
+        self.monthly_bar.setFixedHeight(12)
+        monthly_layout.addWidget(self.monthly_bar)
+
+        # Monthly chart (simple bar chart using QPainter)
+        self.monthly_chart = QFrame()
+        self.monthly_chart.setFixedHeight(180)
+        self.monthly_chart.setMinimumWidth(400)
+        self.monthly_chart.setStyleSheet("background-color: transparent; border: none;")
+
+        # Custom paint event for the chart
+        def _chart_paint_event(event, self_ref=self):
+            self_ref.paint_monthly_chart(event)
+
+        self.monthly_chart.paintEvent = _chart_paint_event
+
+        monthly_layout.addWidget(self.monthly_chart, 1)
+
+        self.monthly_list = QListWidget()
+        self.monthly_list.setMinimumHeight(180)
+        monthly_layout.addWidget(self.monthly_list, 1)
+
+        self.monthly_export_btn = QPushButton(self.t("monthly_export_csv"))
+        self.monthly_export_btn.setObjectName("SecondaryButton")
+        self.monthly_export_btn.clicked.connect(self.export_monthly_csv)
+        monthly_layout.addWidget(self.monthly_export_btn)
+
+        self.tabs.addTab(self.monthly_tab_widget, self.t("monthly_tab"))
+
         # ---- NEW: Achievements Tab ----
         self.badges_tab = QWidget()
         badges_layout = QVBoxLayout(self.badges_tab)
@@ -847,6 +927,21 @@ class PomoTimeApp(QMainWindow):
         theme_layout.addStretch()
         settings_layout.addLayout(theme_layout)
 
+        # Custom accent color
+        accent_layout = QHBoxLayout()
+        self.accent_label_widget = QLabel(self.t("accent_color"))
+        self.accent_color_btn = QPushButton(self.t("accent_color_desc"))
+        self.accent_color_btn.setObjectName("SecondaryButton")
+        self.accent_color_btn.clicked.connect(self.choose_accent_color)
+        self.accent_color_preview = QFrame()
+        self.accent_color_preview.setFixedSize(24, 24)
+        self.accent_color_preview.setStyleSheet(f"background-color: {self.accent_color or THEMES[self.current_theme]['accent']}; border: 1px solid #ccc; border-radius: 4px;")
+        accent_layout.addWidget(self.accent_label_widget)
+        accent_layout.addWidget(self.accent_color_btn)
+        accent_layout.addWidget(self.accent_color_preview)
+        accent_layout.addStretch()
+        settings_layout.addLayout(accent_layout)
+
         auto_layout = QVBoxLayout()
         self.auto_break_check = QCheckBox(self.t("auto_start_breaks"))
         self.auto_break_check.setChecked(self.auto_start_breaks)
@@ -869,6 +964,9 @@ class PomoTimeApp(QMainWindow):
         self.tabs.currentChanged.connect(self.on_tab_changed)
 
         self.main_layout.addWidget(self.tabs)
+
+        # Show welcome screen on first launch
+        QTimer.singleShot(500, self.show_welcome_screen)
 
     def t(self, key, **kwargs):
         return t(key, lang=self.lang, **kwargs)
@@ -932,8 +1030,9 @@ class PomoTimeApp(QMainWindow):
         self.tabs.setTabText(2, self.t("queue_tab"))
         self.tabs.setTabText(3, self.t("student_tab"))
         self.tabs.setTabText(4, self.t("student_weekly_tab"))
-        self.tabs.setTabText(5, self.t("student_badge_title"))
-        self.tabs.setTabText(6, self.t("settings"))
+        self.tabs.setTabText(5, self.t("monthly_tab"))
+        self.tabs.setTabText(6, self.t("student_badge_title"))
+        self.tabs.setTabText(7, self.t("settings"))
 
         self.focus_label_set.setText(self.t("focus_duration"))
         self.break_label_set.setText(self.t("break_duration"))
@@ -994,6 +1093,17 @@ class PomoTimeApp(QMainWindow):
         )
         self.weekly_export_btn.setText(self.t("student_export_csv"))
         self.refresh_weekly_ui()
+
+        self.monthly_title.setText(self.t("monthly_title"))
+        self.monthly_description.setText(self.t("monthly_description"))
+        self.monthly_goal_label.setText(self.t("monthly_goal"))
+        self.monthly_progress_label.setText(
+            self.t("monthly_progress", done=self.monthly_done_hours(), target=self.monthly_goal_hours, percent=self.monthly_percent())
+        )
+        self.monthly_export_btn.setText(self.t("monthly_export_csv"))
+        self.accent_label_widget.setText(self.t("accent_color"))
+        self.accent_color_btn.setText(self.t("accent_color_desc"))
+        self.refresh_monthly_ui()
 
         self.badges_title.setText(self.t("student_badge_title"))
         self.refresh_badges_ui()
@@ -1630,6 +1740,9 @@ class PomoTimeApp(QMainWindow):
             self.weekly_focus_by_subject[today].get(subject_name, 0) + minutes
         )
 
+        # Monthly tracking
+        self._record_monthly_focus(minutes)
+
         # Streak logic: count consecutive days with any focus
         today_date = date.today()
         if self._last_streak_date is None:
@@ -1830,9 +1943,219 @@ class PomoTimeApp(QMainWindow):
         elif index == 4:
             self.refresh_weekly_ui()
         elif index == 5:
-            self.refresh_badges_ui()
+            self.refresh_monthly_ui()
         elif index == 6:
+            self.refresh_badges_ui()
+        elif index == 7:
             self.update_daily_progress()
+
+    # ------------------------------------------------------------------
+    # Monthly stats
+    # ------------------------------------------------------------------
+    def _month_key(self, d: date) -> str:
+        return d.strftime("%Y-%m")
+
+    def monthly_done_hours(self) -> int:
+        start = date.today().replace(day=1)
+        total = 0
+        for month_str, subjects in self.monthly_focus_by_month.items():
+            try:
+                month_date = date.fromisoformat(month_str + "-01")
+            except ValueError:
+                continue
+            if month_date == start:
+                total += sum(subjects.values())
+        return total // 60
+
+    def monthly_percent(self) -> int:
+        target = max(1, self.monthly_goal_hours * 60)
+        total_minutes = 0
+        start = date.today().replace(day=1)
+        for month_str, subjects in self.monthly_focus_by_month.items():
+            try:
+                month_date = date.fromisoformat(month_str + "-01")
+            except ValueError:
+                continue
+            if month_date == start:
+                total_minutes += sum(subjects.values())
+        return max(0, min(100, int(round(total_minutes * 100 / target))))
+
+    def set_monthly_goal(self, value):
+        self.monthly_goal_hours = max(1, value)
+        self.save_settings()
+        self.refresh_monthly_ui()
+
+    def refresh_monthly_ui(self):
+        if not hasattr(self, "monthly_list"):
+            return
+        self.monthly_progress_label.setText(
+            self.t("monthly_progress", done=self.monthly_done_hours(), target=self.monthly_goal_hours, percent=self.monthly_percent())
+        )
+        self.monthly_bar.setValue(self.monthly_percent())
+
+        # Update chart
+        self.monthly_chart.update()
+
+        self.monthly_list.blockSignals(True)
+        self.monthly_list.clear()
+        start = date.today().replace(day=1)
+        found = False
+        for month_str in sorted(self.monthly_focus_by_month.keys()):
+            try:
+                month_date = date.fromisoformat(month_str + "-01")
+            except ValueError:
+                continue
+            if month_date == start:
+                found = True
+                subjects = self.monthly_focus_by_month[month_str]
+                line = f"{month_str}: "
+                line += " • ".join(f"{subj} {mins//60}h{mins%60:02d}m" for subj, mins in subjects.items())
+                self.monthly_list.addItem(line)
+        if not found:
+            self.monthly_list.addItem(self.t("monthly_no_data"))
+        self.monthly_list.blockSignals(False)
+
+    def export_monthly_csv(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.t("monthly_export_csv"), "pomotime_monthly.csv",
+            self.t("csv_filter"),
+        )
+        if not path:
+            return
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Month", "Subject", "Minutes"])
+                for month_str, subjects in sorted(self.monthly_focus_by_month.items()):
+                    for subj, mins in subjects.items():
+                        writer.writerow([month_str, subj, mins])
+            QMessageBox.information(self, self.t("monthly_export_csv"), self.t("student_csv_exported"))
+        except OSError:
+            QMessageBox.warning(self, self.t("monthly_export_csv"), self.t("csv_export_error"))
+
+    def _record_monthly_focus(self, minutes):
+        """Record focus minutes for monthly tracking."""
+        month_key = self._month_key(date.today())
+        subject_name = self.current_task or "General"
+        self.monthly_focus_by_month.setdefault(month_key, {})
+        self.monthly_focus_by_month[month_key][subject_name] = (
+            self.monthly_focus_by_month[month_key].get(subject_name, 0) + minutes
+        )
+        self.save_settings()
+        self.refresh_monthly_ui()
+        self._check_monthly_achievement()
+
+    def _check_monthly_achievement(self):
+        total_minutes = 0
+        start = date.today().replace(day=1)
+        for month_str, subjects in self.monthly_focus_by_month.items():
+            try:
+                month_date = date.fromisoformat(month_str + "-01")
+            except ValueError:
+                continue
+            if month_date == start:
+                total_minutes += sum(subjects.values())
+        target = self.monthly_goal_hours * 60
+        ach = self.achievements.get("monthly", {"unlocked": False, "progress": 0, "need": 1})
+        if not ach["unlocked"] and total_minutes >= target:
+            ach["unlocked"] = True
+        ach["progress"] = min(1, total_minutes // target if target else 0)
+        self.achievements["monthly"] = ach
+        self.refresh_badges_ui()
+
+    def choose_accent_color(self):
+        color = QColorDialog.getColor(
+            QColor(self.accent_color or THEMES[self.current_theme]["accent"]),
+            self,
+            self.t("accent_color"),
+        )
+        if color.isValid():
+            self.accent_color = color.name()
+            self.accent_color_preview.setStyleSheet(
+                f"background-color: {self.accent_color}; border: 1px solid #ccc; border-radius: 4px;"
+            )
+            self.save_settings()
+
+    def paint_monthly_chart(self, event):
+        """Paint a simple bar chart for monthly focus by day."""
+        painter = QPainter(self.monthly_chart)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        t_colors = THEMES.get(self.current_theme, THEMES[DEFAULT_THEME])
+        accent = QColor(self.accent_color or t_colors["accent"])
+
+        # Get last 7 days data
+        today = date.today()
+        days = []
+        values = []
+        for i in range(6, -1, -1):
+            d = today - timedelta(days=i)
+            day_str = d.isoformat()
+            day_minutes = 0
+            # Check weekly data for this day
+            if day_str in self.weekly_focus_by_subject:
+                day_minutes = sum(self.weekly_focus_by_subject[day_str].values())
+            days.append(d.strftime("%a"))
+            values.append(day_minutes)
+
+        max_val = max(values) if values else 1
+        if max_val == 0:
+            max_val = 1
+
+        w = self.monthly_chart.width()
+        h = self.monthly_chart.height()
+        bar_w = w // 10
+        gap = w // 20
+        x_start = gap
+
+        for i, (day, val) in enumerate(zip(days, values)):
+            bar_h = int((val / max_val) * (h - 40))
+            x = x_start + i * (bar_w + gap)
+            y = h - bar_h - 30
+
+            painter.setBrush(accent)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(x, y, bar_w, bar_h, 4, 4)
+
+            # Label
+            painter.setPen(QColor(t_colors["subtext"]))
+            painter.setFont(QFont("Arial", 8))
+            painter.drawText(x, h - 15, bar_w, 12, Qt.AlignmentFlag.AlignCenter, day)
+
+            # Value
+            if val > 0:
+                painter.drawText(x, y - 12, bar_w, 10, Qt.AlignmentFlag.AlignCenter, f"{val//60}h")
+
+        painter.end()
+
+    def show_welcome_screen(self):
+        """Show welcome screen on first launch."""
+        if not self.first_launch or self.welcome_shown:
+            return
+        self.welcome_shown = True
+
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle(self.t("welcome_title"))
+        dialog.setIcon(QMessageBox.Icon.Information)
+
+        msg = f"<h2>{self.t('welcome_title')}</h2>"
+        msg += f"<p><b>{self.t('welcome_subtitle')}</b></p>"
+        msg += f"<p>{self.t('welcome_desc')}</p>"
+        msg += "<ul>"
+        msg += f"<li>{self.t('welcome_feature_1')}</li>"
+        msg += f"<li>{self.t('welcome_feature_2')}</li>"
+        msg += f"<li>{self.t('welcome_feature_3')}</li>"
+        msg += f"<li>{self.t('welcome_feature_4')}</li>"
+        msg += f"<li>{self.t('welcome_feature_5')}</li>"
+        msg += "</ul>"
+        msg += f"<p><i>{self.t('first_launch_msg')}</i></p>"
+
+        dialog.setText(msg)
+        dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+        dialog.exec()
+
+        self.first_launch = False
+        self.save_settings()
 
     def pause_text(self):
         return self.t("pause")
@@ -1964,6 +2287,12 @@ class PomoTimeApp(QMainWindow):
         self.store._last_streak_date = self._last_streak_date.isoformat() if self._last_streak_date else None
         self.store.achievements = self.achievements
 
+        # Monthly / welcome / accent persistence
+        self.store.monthly_focus_by_month = self.monthly_focus_by_month
+        self.store.monthly_goal_hours = self.monthly_goal_hours
+        self.store.accent_color = self.accent_color
+        self.store.first_launch = self.first_launch
+
         self.store.sync()
 
         self.cycles_label.setText(
@@ -2029,6 +2358,12 @@ class PomoTimeApp(QMainWindow):
         last = self.store._last_streak_date
         self._last_streak_date = date.fromisoformat(last) if last else None
         self.achievements = self.store.achievements if isinstance(self.store.achievements, dict) else self.achievements
+
+        # Monthly / welcome / accent restore
+        self.monthly_focus_by_month = self.store.monthly_focus_by_month if isinstance(self.store.monthly_focus_by_month, dict) else {}
+        self.monthly_goal_hours = self.store.monthly_goal_hours
+        self.accent_color = self.store.accent_color
+        self.first_launch = self.store.first_launch
         # Merge saved achievements with defaults so missing keys are filled in.
         if isinstance(self.store.achievements, dict):
             for key, default in self.achievements.items():
@@ -2073,6 +2408,10 @@ class PomoTimeApp(QMainWindow):
         if theme_index >= 0:
             self.theme_combo.setCurrentIndex(theme_index)
         self.theme_combo.blockSignals(False)
+
+        self.accent_color_preview.setStyleSheet(
+            f"background-color: {self.accent_color or THEMES[self.current_theme]['accent']}; border: 1px solid #ccc; border-radius: 4px;"
+        )
 
         self.preset_combo.blockSignals(True)
         preset_index = self.preset_combo.findData(self.preset_key)

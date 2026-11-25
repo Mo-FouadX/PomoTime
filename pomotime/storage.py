@@ -300,5 +300,43 @@ class SettingsStore:
     def achievements(self, value):
         self.set_dict("achievements", value)
 
+    # ---- Welcome / first launch ----
+
+    @property
+    def first_launch(self):
+        return self.get_bool("first_launch", True)
+
+    @first_launch.setter
+    def first_launch(self, value):
+        self.set("first_launch", value)
+
+    # ---- Monthly goals ----
+
+    @property
+    def monthly_goal_hours(self):
+        return self.get_int("monthly_goal_hours", 40)
+
+    @monthly_goal_hours.setter
+    def monthly_goal_hours(self, value):
+        self.set("monthly_goal_hours", value)
+
+    @property
+    def monthly_focus_by_month(self):
+        return self.get_dict("monthly_focus_by_month", {})
+
+    @monthly_focus_by_month.setter
+    def monthly_focus_by_month(self, value):
+        self.set_dict("monthly_focus_by_month", value)
+
+    # ---- Custom accent color ----
+
+    @property
+    def accent_color(self):
+        return self.get_str("accent_color", "")
+
+    @accent_color.setter
+    def accent_color(self, value):
+        self.set("accent_color", value)
+
 
 __all__ = ["SettingsStore", "SETTINGS_ORG", "SETTINGS_APP"]
