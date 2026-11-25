@@ -1,190 +1,203 @@
-# PomoTime - Professional Pomodoro Timer
+# PomoTime — Professional Pomodoro Focus Timer
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![PyQt6](https://img.shields.io/badge/PyQt6-6.5.0+-green.svg)](https://www.pyqt.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)]
+[![PyQt6](https://img.shields.io/badge/PyQt6-6.5.0%2B-green.svg)](https://www.pyqt.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](https://github.com/Mo-FouadX/PomoTime)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](.github/workflows/build.yml)
 
 ---
 
-## 🎯 A Professional, Native Pomodoro Timer for Focus Management
+## English
 
-**PomoTime** is a polished, commercial-grade desktop application built with Python 3 and PyQt6 that helps you manage focus sessions using the proven Pomodoro technique. Combining a clean modern UI with full bilingual support (English/Arabic), Right-to-Left (RTL) layout, floating mini-mode, customizable themes, and a powerful multi-block Session Queue — all without requiring any external multimedia dependencies.
+### 🎯 A Professional, Native Pomodoro Timer for Focus Management
 
-Designed for privacy and performance, PomoTime relies entirely on native system tools and pure Python audio synthesis, making it lightweight, portable, and respectful of your system resources.
+**PomoTime** is a polished, bilingual (English/Arabic) desktop application built with Python 3 and PyQt6 that helps students and professionals manage focus sessions using the proven Pomodoro technique. It is **100% free**, has no accounts, no telemetry, no ads, and stores everything locally on your machine.
 
-**PomoTime is currently built and supported for Linux only** (`.AppImage`, `.deb`, and source compilation with Python 3.10+ & PyQt6). Windows and macOS support is planned for future releases.
+Designed for privacy and performance, PomoTime relies entirely on native system tools and pure-Python audio synthesis — no external multimedia dependencies.
 
----
-
-## 📸 Screenshots
-
-| English (Clean Default) | Arabic (RTL) | Dark Theme (Midnight) | Mini-Mode |
-|:------------------------:|:------------:|:---------------------:|:--------:|
-| ![timer_en](assets/screenshots/timer_en.png) | ![timer_ar_rtl](assets/screenshots/timer_ar_rtl.png) | ![dark_theme](assets/screenshots/dark_theme.png) | ![mini_mode](assets/screenshots/mini_mode.png) |
+**Currently built and supported for Linux** (`.AppImage`, `.deb`, and source). Windows/macOS support is planned.
 
 ---
 
-## ✨ Key Features
+### ✨ Key Features
 
-### 🎯 Focus & Break Timers
-- **Focus Session**: Default 25 minutes (fully customizable)
-- **Short Break**: Default 5 minutes
-- **Long Break**: Default 20 minutes (after configurable cycles)
-- Automatic long break scheduling after reaching cycle target
+| Category | Features |
+|----------|----------|
+| **Focus Timers** | Focus / Short Break / Long Break sessions, fully customizable durations, automatic cycle logic (long break every N cycles). |
+| **Session Queue** | Multi-block planner — build your own sequence of focus blocks and breaks; timer advances automatically; reorder, delete, quick-add patterns. |
+| **Presets** | Classic Pomodoro (25/5/20 ×4), Deep Work (50/10/30 ×2), Quick Sprint (15/3/10 ×4), Custom Queue. |
+| **Daily Goal** | Set a daily focus target; progress bar and midnight reset; all-time totals preserved. |
+| **Statistics** | Total focus time, completed cycles, breaks taken, productivity score (0–100), recent-session log, CSV export. |
+| **UI/UX** | 4 themes (default, forest, midnight, sunset), floating mini-mode (always on top), system tray, keyboard shortcuts. |
+| **Bilingual / RTL** | Instant English ↔ Arabic switch; full interface translation; correct RTL layout for Arabic. |
+| **Sounds** | Soft synthesized chimes (click, start focus, start break, alert) — pure Python, no audio files needed. |
 
-### 📚 Multi-Block Session Queue
-- **Custom Session Planner**: Build your own sequence of focus blocks and breaks
-- **Block Editor**: Choose stage type, duration (1–180 min), and optional task labels
-- **Quick-Add Patterns**: `+ 2 Focus + Long Break`, `+ 1 Extra Cycle`
-- **Reordering**: Move Up, Move Down, Delete Block, Clear Queue
-- **Automatic Progression**: Timer advances through every step in order
-- **Live Progress**: `Queue Step 2 of 7 • Next: Long Break (15m)` displayed under timer
+---
 
-### 🎛️ Productivity Presets
-- **Classic Pomodoro**: 25m focus / 5m break / 20m long break × 4
-- **Deep Work**: 50m focus / 10m break / 30m long break × 2
-- **Quick Sprint**: 15m focus / 3m break / 10m long break × 4
-- **Custom Queue**: Activate your own multi-block sequence
+### 🎓 Built for Students (Free)
 
-### 🌙 Daily Focus Goal
-- Set a daily target in minutes
-- **Themed progress bar**: `Today: 50 / 120 mins • 42%` on Timer & Statistics tabs
-- **Midnight reset**: Daily counter resets at 00:00 while all-time totals and history are preserved
+PomoTime helps students solve two problems at once: **distraction during study** and **disorganized study time**.
 
-### 📊 Statistics & CSV Export
-- **Recent Sessions Log**: Scrollable list with task name, duration, and timestamp
-- **Export to CSV**: Full session history (task, duration, completion time) via `QFileDialog`
-- **Productivity Score**: 0–100 calculation based on completed cycles and focus time
-- **All-Time Totals**: Total focus minutes, completed cycles, breaks taken
+- **Study Subject Planner**: Add each subject (e.g. "Physics — Unit 3") and how many focus blocks it needs. Mark subjects complete as you finish them.
+- **Strict Focus Mode**: Locks the app on the timer screen while you study — no switching tabs, no distractions until the timer ends.
+- **Weekly Study Stats**: Focus hours per subject this week, weekly goal, and a consecutive-day study streak to build a habit.
+- **Achievements / Badges**: Unlock badges like "First Session", "3-Day Streak", "7-Day Streak", "5-Hour Day", "10-Hour Week" to stay motivated.
+- **CSV Export**: Export your session history and weekly stats for your own records.
 
-### 🎨 Visual Themes
-- **Clean Default**: Professional light theme
-- **Calm Forest**: Soothing green theme
-- **Midnight Focus**: Dark theme for night owls
-- **Warm Sunset**: Amber/orange theme for warm preferences
+Everything is saved locally — no sign-up, no internet required after installation.
 
-### 🌐 Bilingual & RTL Support
-- **Instant Language Switch**: English (LTR) ↔ Arabic (RTL)
-- **Full Interface Translation**: All labels, buttons, dialogs, presets, queue items
-- **RTL Layout**: `QComboBox`, `QSpinBox`, `QTabWidget` all align correctly in Arabic
-- **Arabic Typos Fixed**: Native-quality Arabic translations throughout
+---
 
-### 📢 Notification Chimes (Zero External Assets)
-- **Soft, synthesized bell tones**: Generated purely in Python (`math`, `wave`, `struct`)
-- **4 distinct sounds**: `click`, `start_focus`, `start_break`, `alert`
-- **Native playback**: `paplay`/`aplay` on Linux (terminal bell as final fallback)
-- **No QtMultimedia dependency**: Pure Python audio generation only
+### 🚀 Quick Start
 
-### 📌 System Tray & Mini-Mode
-- **Hide to Tray**: Completely hide the main window while timer continues running
-- **Floating Mini-Mode**: Always-on-top widget showing remaining time, stage, and active task
-- **Boundary Detection**: Prevents widget from being dragged off-screen
-- **Keyboard Shortcuts**: `Space` (Start/Pause), `R` (Reset), `S` (Skip), `M` (Mini-Mode)
+```bash
+# Clone the repository
+git clone https://github.com/Mo-FouadX/PomoTime.git
+cd PomoTime
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Run the application
+python3 -m pomotime.main
+```
+
+**Requirements:** Python 3.10+, PyQt6 >= 6.5.0. No extra multimedia packages.
+
+---
 
 ### ⌨️ Keyboard Shortcuts
+
 | Key | Action |
 |-----|--------|
-| `Space` | Start/Pause timer |
+| `Space` | Start / Pause timer |
 | `R` | Reset current session |
-| `S` | Skip current stage/queue block |
+| `S` | Skip current stage / queue block |
 | `M` | Toggle Floating Mini-Mode |
 
 ---
 
-## 🚀 Quick Start & Installation
+### 📦 Building & Distribution
 
-### Prerequisites
+- **AppImage**: Built automatically by GitHub Actions; download from the [Releases](https://github.com/Mo-FouadX/PomoTime/releases) page or build with `linuxdeploy` + `appimagetool`.
+- **.deb Package**: Built by GitHub Actions; download from Releases or build with `dpkg-deb` from the CI pipeline.
+- **Source**: `pip install -r requirements.txt && python3 -m pomotime.main`
+
+---
+
+### 🧪 Running Tests
+
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/PomoTime.git
+python3 -m unittest discover -s tests -v
+```
+
+Tests cover the session queue, settings storage, translations, and themes. CI runs them on every push and pull request.
+
+---
+
+### 🗣️ العربية
+
+## pomotime — مؤقت بومودورو احترافي للتركيز
+
+**بوموتايم** تطبيق سطح مكتب احترافي ثنائي اللغة (الإنجليزية/العربية) مبني بلغة بايثون 3 و PyQt6، يساعد الطلاب والمهنيين على إدارة جلسات التركيز باستخدام تقنية بومودورو المجربة. التطبيق **مجاني بالكامل**، لا يحتاج حسابات، لا contient تتبع، لا إعلانات، وكل شيء يُحفظ محليًا على جهازك.
+
+مصمم للخصوصية والأداء، يعتمد بوموتايم بالكامل على أدوات النظام الأصلية وتوليد الصوت ببايثون الخالص — بدون اعتماديات وسائط خارجية.
+
+**مدعوم حاليًا لنظام لينكس** (`.AppImage`, `.deb`, والمصدر). دعم ويندوز/ماك مخطط للمستقبل.
+
+---
+
+### ✨ الميزات الأساسية
+
+| القسم | الميزات |
+|-------|---------|
+| **مؤقتات التركيز** | جلسات تركيز / استراحة قصيرة / استراحة طويلة، مدة قابلة للتخصيص بالكامل، منطق دورات تلقائي (استراحة طويلة كل N دورات). |
+| **جدول الجلسات** | مخطط متعدد الكتل —ابنِ تسلسلًا خاصًا من كتل التركيز والاستراحات؛ يتقدم المؤقت تلقائيًا؛ إعادة ترتيب، حذف، إضافة سريعة لأنماط. |
+| **الأنماط الجاهزة** | بومودورو كلاسيكي (25/5/20 ×4)، عمل عميق (50/10/30 ×2)، سباق سريع (15/3/10 ×4)، جدول مخصص. |
+| **الهدف اليومي** | حدد هدف تركيز يومي؛ شريط تقدم وإعادة ضبط عند منتصف الليل؛ الإجماليات تُحفظ دائمًا. |
+| **الإحصائيات** | إجمالي وقت التركيز، الدورات المكتملة، الاستراحات، درجة إنتاجية (0–100)، سجل الجلسات الأخيرة، تصدير CSV. |
+| **الواجهة وال تجربة المستخدم** | 4 سمات (افتراضي، غابة، منتصف الليل، غروب)، وضع عائم مصغر (أعلى الجميع)، صينية النظام، اختصارات لوحة المفاتيح. |
+| **ثنائي اللغة / RTL** | تبديل فوري بين الإنجليزية والعربية؛ ترجمة كاملة للواجهة؛ تخطيط RTL صحيح للعربية. |
+| **الأصوات** | نغمات ناعمة مُولدة بالبايثون (ضغط، بدء تركيز، بدء استراحة، تنبيه) — بايثون خالص، لا حاجة لملفات صوتية. |
+
+---
+
+### 🎓 مصمم للطلاب (مجاني)
+
+يساعد بوموتايم الطلاب على حل مشكلتين في آن واحد: **التشتيت أثناء المذاكرة** و**عدم تنظيم وقت المذاكرة**.
+
+- **مخطط مواد المذاكرة**: أضف كل مادة (مثلاً "فيزياء — الوحدة 3") وعدد جلسات التركيز التي تحتاجها. اجعل المواد مكتملة عند انتهائك منها.
+- **وضع التركيز الصارم**: يقفل التطبيق على شاشة التركيز أثناء المذاكرة — بدون switching بين التبويبات، بدون تشتيت حتى ينتهي المؤقت.
+- **إحصائيات أسبوعية**: ساعات تركيز لكل مادة هذا الأسبوع، هدف أسبوعي، وسلسلة أيام متواصلة لبناء عادة المذاكرة.
+- **الإنجازات والشارات**: افتح شارات مثل "جلسة أولى"، "سلسلة 3 أيام"، "سلسلة 7 أيام", "5 ساعات يوم"، "10 ساعات أسبوع" لتحفيزك على الاستمرار.
+- **تصدير CSV**: صدر سجل جلساتك وإحصائياتك الأسبوعية لسجلاتك الشخصية.
+
+كل شيء يُحفظ محليًا — بدون تسجيل، بدون إنترنت بعد التثبيت.
+
+---
+
+### 🚀 البدء السريع
+
+```bash
+# استنسخ المستودع
+git clone https://github.com/Mo-FouadX/PomoTime.git
 cd PomoTime
 
-# Install dependencies
-pip install PyQt6>=6.5.0
+# ثبّت المتطلبات
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# شغّل التطبيق
+python3 -m pomotime.main
 ```
 
-### Running the Application
+**المتطلبات:** بايثون 3.10+، PyQt6 >= 6.5.0. لا حاجة لحزم وسائط إضافية.
+
+---
+
+### ⌨️ اختصارات لوحة المفاتيح
+
+| المفتاح | العملية |
+|--------|---------|
+| `Space` | بدء / إيقاف مؤقت |
+| `R` | إعادة ضبط الجلسة الحالية |
+| `S` | تجاوز المرحلة الحالية / كتلة الجدول |
+| `M` | تبديل وضع العائم المصغر |
+
+---
+
+### 📦 البناء والتوزيع
+
+- **AppImage**: يبنيه GitHub Actions تلقائيًا؛ حمله من صفحة [الإصدارات](https://github.com/Mo-FouadX/PomoTime/releases) أو بنِّه باستخدام `linuxdeploy` + `appimagetool`.
+- **حزمة .deb**: تبنيه GitHub Actions؛ حمله من الإصدارات أو بنِّه باستخدام `dpkg-deb` من خط construcción.
+- **المصدر**: `pip install -r requirements.txt && python3 -m pomotime.main`
+
+---
+
+### 🧪 تشغيل الاختبارات
+
 ```bash
-python3 pomotime.py
+python3 -m unittest discover -s tests -v
 ```
 
-### Building & Distribution
-- **AppImage**: Download the pre-built `.AppImage` from [GitHub Releases](https://github.com/Mo-FouadX/PomoTime/releases/latest), or build with `linuxdeploy` + `appimagetool`.
-- **.deb Package**: Download the pre-built `.deb` from [GitHub Releases](https://github.com/Mo-FouadX/PomoTime/releases/latest), or build with `dpkg-deb` from the CI pipeline.
-- **Source Compilation**: `pip install -r requirements.txt && python3 pomotime.py`
-- **GitHub Releases**: Pre-built Linux installers available from the Releases page.
-
-### Requirements
-- Python 3.10+
-- PyQt6 >= 6.5.0
-- No multimedia packages required (pure Python audio, native system players only)
+تغطي الاختبارات جدول الجلسات، تخزين الإعدادات، الترجمات، والسمات. يُشغل CI الاختبارات عند كل push و pull request.
 
 ---
 
-## 📋 Keyboard Shortcuts
+### 📄 License
 
-| Shortcut | Action |
-|----------|--------|
-| `Space` | Start/Pause the timer |
-| `R` | Reset the current session or restart a completed queue |
-| `S` | Skip the current stage or queue block |
-| `M` | Toggle Floating Mini-Mode (always-on-top widget) |
+**PomoTime** is released under the MIT License. See the accompanying [LICENSE](LICENSE) file.
 
----
-
-## 🛠️ Development & Methodology
-
-**PomoTime was crafted using Vibe Coding (AI-Assisted Development)** with human product direction, UX iteration, and Linux desktop testing. The application was designed from the ground up as a professional productivity tool, with careful attention to:
-
-- **Clean code structure** maintainable by human developers
-- **Accessible design** with full bilingual and RTL support
-- **Native performance** without external asset dependencies
-- **Linux-first architecture**: Optimized for Linux desktop environments (X11/GTK/Qt)
-- **Privacy-respecting architecture**: No external APIs, no telemetry, no background sound servers
-
-The project demonstrates how AI-assisted development can produce production-quality software when guided by experienced product direction and thorough testing on the target platform.
-
----
-
-## 📦 File Structure
-
-```
-PomoTime/
-├── pomotime.py          # Main application logic, UI, presets, session queue
-├── requirements.txt     # PyQt6>=6.5.0
-├── CONTEXT.md          # Technical reference documentation
-├── PLAYAPP.md          # User guide
-├── README.md           # This file
-├── assets/
-│   └── screenshots/    # Application screenshots
-└── .github/
-    └── workflows/
-        └── build.yml   # CI/CD pipeline
-```
-
----
-
-## 💡 Tips & Best Practices
-
-- **Use Presets**: Start with Classic Pomodoro, Deep Work, or Quick Sprint, then customize
-- **Build Custom Queues**: For complex work sessions, use the Session Queue tab to plan multi-block patterns
-- **Set Daily Goals**: Track progress toward realistic daily focus targets
-- **Switch Languages**: Use the language selector to toggle between English and Arabic
-- **Try Different Themes**: Find the visual style that works best for your environment
-- **Use Mini-Mode**: Keep focus time visible while working in other applications
-- **Export History**: Regularly export your session CSV for personal analytics or productivity tracking
-
----
-
-## 📄 License
-
-**PomoTime** is released under the MIT License. See the accompanying LICENSE file for details.
+**بوموتايم** صدر برخصة MIT. راجع ملف [LICENSE](LICENSE) المرفق.
 
 ---
 
 <div align="center">
 
-**Built with Python 3 & PyQt6 • Powered by native system tools • No external multimedia dependencies**
+Built with Python 3 & PyQt6 • Powered by native system tools • No external multimedia dependencies • **Free for students and everyone**
+
+مبني ببايثون 3 و PyQt6 • مدعوم بأدوات النظام الأصلية • بدون وسائط خارجية • **مجاني للطلاب والجميع**
 
 </div>

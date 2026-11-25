@@ -1,117 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<title>PomoTime – Professional Pomodoro Timer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomoTime — Free Pomodoro Focus Timer for Students</title>
 <style>
-  body{font-family:Arial,sans-serif;margin:0;padding:0;background:#f4f4f4;color:#333}
-  header{background:#2563EB;color:#fff;padding:2rem;text-align:center}
-  header h1{margin:0;font-size:2.5rem}
-  header p{margin:0.5rem 0 0;font-size:1.2rem}
-  .container{max-width:1200px;margin:auto;padding:1rem}
-  .hero{display:flex;flex-wrap:wrap;align-items:center;gap:2rem;background:#fff;padding:2rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-  .hero img{max-width:100%;height:auto;border-radius:4px}
-  .hero .text{flex:1 1 300px}
-  .hero .buttons{margin-top:1rem}
-  .hero .buttons a{display:inline-block;margin-right:0.5rem;padding:0.75rem 1.5rem;background:#2563EB;color:#fff;border-radius:4px;text-decoration:none;font-weight:bold}
-  .hero .buttons a:hover{background:#1d4ed8}
-  .features{display:grid;gap:1.5rem;margin-top:2rem}
-  @media(min-width:600px){.features{grid-template-columns:repeat(2,1fr)}}
-  @media(min-width:900px){.features{grid-template-columns:repeat(3,1fr)}}
-  .feature{background:#fff;padding:1.5rem;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
-  .feature h3{margin-top:0;font-size:1.25rem;color:#2563EB}
-  footer{background:#222;color:#ccc;text-align:center;padding:1rem;margin-top:2rem}
-  footer a{color:#fff;text-decoration:none}
-  footer a:hover{color:#ddd}
-  .lang-toggle{position:fixed;top:1rem;right:1rem;background:#2563EB;color:#fff;padding:0.5rem;border-radius:4px;cursor:pointer}
-  .lang-toggle:hover{background:#1d4ed8}
-  .arabic{display:none}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --sub: #64748b;
+    --accent: #2563eb; --accent-hover: #1d4ed8; --border: #cbd5e1;
+  }
+  [dir="rtl"] { --bg: #f8fafc; }
+  body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+  header { text-align: center; padding: 60px 20px; }
+  h1 { font-size: 2.5rem; margin-bottom: 12px; letter-spacing: -0.5px; }
+  .subtitle { font-size: 1.15rem; color: var(--sub); margin-bottom: 24px; }
+  .lang-switch { margin-bottom: 30px; display: flex; gap: 10px; justify-content: center; }
+  .lang-switch button { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 0.95rem; }
+  .lang-switch button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .section { margin: 50px 0; }
+  .section h2 { font-size: 1.6rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  .card h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--accent); }
+  .card p { color: var(--sub); font-size: 0.95rem; }
+  .badge { display: inline-block; background: #e2e8f0; color: var(--text); font-size: 0.8rem; padding: 3px 10px; border-radius: 12px; margin-right: 6px; margin-bottom: 6px; }
+  .cta { text-align: center; margin: 60px 0; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1.05rem; }
+  .btn:hover { background: var(--accent-hover); }
+  .btn-outline { display: inline-block; background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-left: 10px; }
+  .btn-outline:hover { background: var(--accent); color: #fff; }
+  footer { text-align: center; color: var(--sub); font-size: 0.9rem; padding: 40px 0; border-top: 1px solid var(--border); }
+  .arabic { direction: rtl; text-align: right; }
+  .arabic h1, .arabic h2, .arabic h3 { text-align: right; }
+  .arabic .section h2 { justify-content: flex-end; }
+  .arabic .lang-switch button.active { }
+  .hide { display: none !important; }
+  @media (max-width: 600px) { h1 { font-size: 1.9rem; } .container { padding: 20px 16px; } }
 </style>
-<script>
-function toggleLang(){
-  var en=document.querySelectorAll('.en');
-  var ar=document.querySelectorAll('.arabic');
-  en.forEach(el=>el.style.display='');
-  ar.forEach(el=>el.style.display='none');
-  if(document.body.dataset.lang==='ar'){
-    en.forEach(el=>el.style.display='none');
-    ar.forEach(el=>el.style.display='');
-    document.body.dataset.lang='en';
-  }else{document.body.dataset.lang='ar'}
-}
-window.addEventListener('load',()=>{document.body.dataset.lang='en';});
-</script>
 </head>
-<body>
-<div class="lang-toggle" onclick="toggleLang()">العربية/English</div>
-<header>
-  <h1 class="en">PomoTime</h1>
-  <h1 class="arabic" style="display:none;">بوموتايم</h1>
-  <p class="en">Professional Pomodoro Timer for Focus Management</p>
-  <p class="arabic" style="display:none;">مؤقت بومودورو احترافي لإدارة التركيز</p>
-</header>
+<body dir="ltr">
+
 <div class="container">
-  <section class="hero">
-    <div class="text">
-      <h2 class="en">Take control of your focus sessions.</h2>
-      <h2 class="arabic" style="display:none;">تحكم في جلسات تركيزك.</h2>
-      <p class="en">Customizable timers, multi-block queues, bilingual support, and more.</p>
-      <p class="arabic" style="display:none;">مؤقتات قابل للتخصيص، قوائم متعددة، دعم ثنائي اللغة، وأكثر.</p>
-      <div class="buttons">
-        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest/download/pomotime.AppImage" target="_blank" class="en">Download .AppImage</a>
-        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest/download/pomotime.deb" target="_blank" class="en">Download .deb</a>
-        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest" target="_blank" class="arabic" style="display:none;">تنزيل .AppImage</a>
-        <a href="https://github.com/Mo-FouadX/PomoTime/releases/latest" target="_blank" class="arabic" style="display:none;">تنزيل .deb</a>
+
+  <!-- English section -->
+  <section id="en" class="section">
+    <header>
+      <div class="lang-switch">
+        <button id="btn-en" class="active" onclick="setLang('en')">English</button>
+        <button id="btn-ar" onclick="setLang('ar')">العربية</button>
+      </div>
+      <h1>PomoTime <span style="font-size:1.6rem;">🍅</span></h1>
+      <div class="subtitle">A free, bilingual Pomodoro focus timer for students — built with Python & PyQt6.</div>
+    </header>
+
+    <div class="badge">MIT License</div>
+    <div class="badge">100% Free</div>
+    <div class="badge">No Accounts</div>
+    <div class="badge">No Ads</div>
+    <div class="badge">Linux</div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>🎯 Focus Timers</h3>
+        <p>Focus, short break, and long break sessions with fully customizable durations and automatic cycle logic.</p>
+      </div>
+      <div class="card">
+        <h3>📋 Session Queue</h3>
+        <p>Build your own sequence of focus blocks and breaks. The timer advances through every step automatically.</p>
+      </div>
+      <div class="card">
+        <h3>📚 Study Planner</h3>
+        <p>Add your subjects and how many focus blocks each needs. Mark them complete as you finish.</p>
+      </div>
+      <div class="card">
+        <h3>🔒 Strict Focus Mode</h3>
+        <p>Locks the app on the timer while you study — no distractions until the session ends.</p>
+      </div>
+      <div class="card">
+        <h3>📈 Weekly Stats</h3>
+        <p>Focus hours per subject, weekly goal, and a consecutive-day study streak to build a habit.</p>
+      </div>
+      <div class="card">
+        <h3>🏆 Achievements</h3>
+        <p>Unlock badges like First Session, 3-Day Streak, 7-Day Streak, 5-Hour Day, 10-Hour Week.</p>
       </div>
     </div>
-    <div class="images">
-      <img src="../assets/screenshots/timer_en.png" alt="Timer" style="width:200px;margin-bottom:1rem;">
-      <img src="../assets/screenshots/timer_ar_rtl.png" alt="Timer RTL" style="width:200px;">
+
+    <div class="cta">
+      <h2>Get Started — It's Free</h2>
+      <p>Download PomoTime for Linux and start focusing today.</p>
+      <a class="btn" href="https://github.com/Mo-FouadX/PomoTime/releases/latest">Download Latest Release</a>
+      <a class="btn-outline" href="https://github.com/Mo-FouadX/PomoTime">View on GitHub</a>
     </div>
   </section>
-  <section class="features">
-    <div class="feature">
-      <h3 class="en">Custom Multi‑Cycle Queue</h3>
-      <h3 class="arabic" style="display:none;">قائمة متعددة الدورات مخصصة</h3>
-      <p class="en">Plan focus blocks, short and long breaks with optional task labels.</p>
-      <p class="arabic" style="display:none;">خطط لكتل التركيز، الاستراحات القصيرة والطويلة مع تسميات اختيارية للمهمة.</p>
+
+  <!-- Arabic section -->
+  <section id="ar" class="section arabic hide" dir="rtl">
+    <header>
+      <div class="lang-switch" style="justify-content: center;">
+        <button id="btn-en-ar" onclick="setLang('en')">English</button>
+        <button id="btn-ar-ar" class="active" onclick="setLang('ar')">العربية</button>
+      </div>
+      <h1>بوموتايم <span style="font-size:1.6rem;">🍅</span></h1>
+      <div class="subtitle">مؤقت بومودورو مجاني للطلاب، ثنائي اللغة، مبني ببايثون و PyQt6.</div>
+    </header>
+
+    <div class="badge">رخصة MIT</div>
+    <div class="badge">مجاني بالكامل</div>
+    <div class="badge">بدون حسابات</div>
+    <div class="badge">بدون إعلانات</div>
+    <div class="badge">لينكس</div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>⏱️ مؤقتات التركيز</h3>
+        <p>جلسات تركيز واستراحة قصيرة وطويلة، مع مدة قابلة للتخصيص بالكامل ومنطق دورات تلقائي.</p>
+      </div>
+      <div class="card">
+        <h3>📋 جدول الجلسات</h3>
+        <p>ابنِ تسلسلًا خاصًا من كتل التركيز والاستراحات. يتقدم المؤقت تلقائيًا خلال كل خطوة.</p>
+      </div>
+      <div class="card">
+        <h3>📚 مخطط المذاكرة</h3>
+        <p>أضف موادك الدراسية وعدد جلسات التركيز التي تحتاجها لكل مادة. اجعلها مكتملة عند الانتهاء.</p>
+      </div>
+      <div class="card">
+        <h3>🔒 وضع التركيز الصارم</h3>
+        <p>يقفل التطبيق على شاشة التركيز أثناء المذاكرة — بدون تشتيت حتى تنتهي الجلسة.</p>
+      </div>
+      <div class="card">
+        <h3>📈 إحصائيات أسبوعية</h3>
+        <p>ساعات تركيز لكل مادة، هدف أسبوعي، وسلسلة أيام متواصلة لبناء عادة المذاكرة.</p>
+      </div>
+      <div class="card">
+        <h3>🏆 الإنجازات</h3>
+        <p>افتح شارات مثل الجلسة الأولى، سلسلة 3 أيام، سلسلة 7 أيام، 5 ساعات يوم، 10 ساعات أسبوع.</p>
+      </div>
     </div>
-    <div class="feature">
-      <h3 class="en">Floating Mini‑Mode</h3>
-      <h3 class="arabic" style="display:none;">الوضع المصغر العائم</h3>
-      <p class="en">Always‑on‑top widget showing time, stage, and task.</p>
-      <p class="arabic" style="display:none;">عنصر دائم في المقدمة يُظهر الوقت، المرحلة، والمهمة.</p>
-    </div>
-    <div class="feature">
-      <h3 class="en">Bilingual EN/AR RTL</h3>
-      <h3 class="arabic" style="display:none;">اللغات الإنجليزية/العربية مع RTL</h3>
-      <p class="en">Switch instantly between English and Arabic layout.</p>
-      <p class="arabic" style="display:none;">التبديل الفوري بين الإنجليزية والعربية مع تخطيط من اليمين إلى اليسار.</p>
-    </div>
-    <div class="feature">
-      <h3 class="en">Four Visual Themes</h3>
-      <h3 class="arabic" style="display:none;">أربع سمات بصرية</h3>
-      <p class="en">Default, Forest, Midnight, Sunset – choose what feels right.</p>
-      <p class="arabic" style="display:none;">الافتراضي، الغابة، منتصف الليل، الغروب – اختر ما يناسبك.</p>
-    </div>
-    <div class="feature">
-      <h3 class="en">Zero‑Asset Chimes</h3>
-      <h3 class="arabic" style="display:none;">نغمات بدون أصول</h3>
-      <p class="en">Pure Python synthesized bell tones – no external files.</p>
-      <p class="arabic" style="display:none;">نغمات طبلة معتمدة على Python فقط – لا ملفات خارجية.</p>
-    </div>
-    <div class="feature">
-      <h3 class="en">Daily Focus Goal & CSV Export</h3>
-      <h3 class="arabic" style="display:none;">هدف تركيز يومي وتصدير CSV</h3>
-      <p class="en">Track daily focus minutes and export session history.</p>
-      <p class="arabic" style="display:none;">تتبع دقائق التركيز اليومية وتصدير تاريخ الجلسات.</p>
+
+    <div class="cta">
+      <h2>ابدأ الآن — مجاني</h2>
+      <p>حمّل بوموتايم للينكس وابدأ تركيزك اليوم.</p>
+      <a class="btn" href="https://github.com/Mo-FouadX/PomoTime/releases/latest">تحميل أحدث إصدار</a>
+      <a class="btn-outline" href="https://github.com/Mo-FouadX/PomoTime">عرض على جيت هاب</a>
     </div>
   </section>
+
+  <footer>
+    PomoTime — Free Pomodoro Focus Timer · Built with Python 3 & PyQt6 · MIT License<br>
+    <a href="https://github.com/Mo-FouadX/PomoTime" style="color:var(--accent); text-decoration:none;">GitHub Repository</a>
+  </footer>
+
 </div>
-<footer>
-  <p class="en">© 2026 Mohamed Fouad – MIT License. <a href="https://github.com/Mo-FouadX/PomoTime" target="_blank">GitHub</a></p>
-  <p class="arabic" style="display:none;">© 2026 محمد فؤاد – رخصة MIT. <a href="https://github.com/Mo-FouadX/PomoTime" target="_blank">GitHub</a></p>
-</footer>
+
+<script>
+function setLang(lang) {
+  const en = document.getElementById('en');
+  const ar = document.getElementById('ar');
+  const btnEn = document.getElementById('btn-en');
+  const btnAr = document.getElementById('btn-ar');
+  const btnEnAr = document.getElementById('btn-en-ar');
+  const btnArAr = document.getElementById('btn-ar-ar');
+  const body = document.body;
+
+  if (lang === 'ar') {
+    en.classList.add('hide');
+    ar.classList.remove('hide');
+    ar.setAttribute('dir', 'rtl');
+    body.setAttribute('dir', 'rtl');
+    btnEn.classList.remove('active'); btnAr.classList.add('active');
+    btnEnAr.classList.remove('active'); btnArAr.classList.add('active');
+  } else {
+    ar.classList.add('hide');
+    en.classList.remove('hide');
+    ar.setAttribute('dir', 'ltr');
+    body.setAttribute('dir', 'ltr');
+    btnEn.classList.add('active'); btnAr.classList.remove('active');
+    btnEnAr.classList.add('active'); btnArAr.classList.remove('active');
+  }
+}
+</script>
 </body>
 </html>
