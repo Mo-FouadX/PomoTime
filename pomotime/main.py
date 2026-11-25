@@ -2364,6 +2364,7 @@ class PomoTimeApp(QMainWindow):
         self.monthly_goal_hours = self.store.monthly_goal_hours
         self.accent_color = self.store.accent_color
         self.first_launch = self.store.first_launch
+
         # Merge saved achievements with defaults so missing keys are filled in.
         if isinstance(self.store.achievements, dict):
             for key, default in self.achievements.items():
