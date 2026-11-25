@@ -36,8 +36,13 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Byte-compile (syntax check)
-        run: python3 -m py_compile pomotime.py && echo "Syntax OK"
+      - name: Byte-compile all package modules (syntax check)
+        run: python3 -m py_compile pomotime/__init__.py pomotime/main.py pomotime/i18n.py pomotime/audio.py pomotime/themes.py pomotime/storage.py pomotime/queue.py && echo "Syntax OK"
+
+      - name: Run unit tests
+        run: |
+          pip install --upgrade pip
+          python3 -m unittest discover -s tests -v
 
       - name: Headless import smoke test
         env:
@@ -46,16 +51,16 @@ jobs:
           python3 - <<'PY'
           import sys
           from PyQt6.QtWidgets import QApplication
-          from pomotime import PomoTimeApp, CircularTimerWidget, FloatingMiniWidget, generate_chime
+          from pomotime.main import PomoTimeApp
           app = QApplication(sys.argv)
           w = PomoTimeApp()
           assert hasattr(w, "timer")
           assert hasattr(w, "circular_timer")
           assert hasattr(w, "task_input")
-          assert hasattr(w, "queue_list")
-          assert hasattr(w, "preset_combo")
-          assert hasattr(w, "timer_daily_bar")
-          print("PomoTimeApp instantiated in offscreen mode — OK")
+          assert hasattr(w, "student_list")
+          assert hasattr(w, "weekly_list")
+          assert hasattr(w, "badges_list")
+          print("PomoTimeApp headless smoke test — OK")
           PY
 
   build-linux-packages:
@@ -85,8 +90,8 @@ jobs:
         run: |
           pyinstaller --noconfirm --onefile --windowed \
             --name pomotime \
-            --add-data "pomotime.py:." \
-            pomotime.py
+            --collect-all pomotime \
+            pomotime/main.py
 
       - name: Generate Application Icon (256x256 PNG — pure Qt painter)
         env:
@@ -96,7 +101,7 @@ jobs:
           import sys
           from PyQt6.QtWidgets import QApplication
           from PyQt6.QtGui import QImage, QPainter, QColor, QPen, QFont
-          from PyQt6.QtCore import Qt, QRectF, QPointF
+          from PyQt6.QtCore import Qt, QPointF
           app = QApplication(sys.argv)
 
           SIZE = 256
@@ -106,20 +111,16 @@ jobs:
           p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
           p.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
 
-          # Rounded tomato-red body
           p.setPen(Qt.PenStyle.NoPen)
           p.setBrush(QColor("#E8483F"))
           p.drawRoundedRect(16, 28, 224, 212, 60, 60)
 
-          # Subtle highlight
           p.setBrush(QColor(255, 255, 255, 38))
           p.drawEllipse(44, 52, 120, 180)
 
-          # Clock face
           p.setBrush(QColor("#FFFFFF"))
           p.drawEllipse(56, 56, 144, 144)
 
-          # Tick marks
           p.setPen(QPen(QColor("#E8483F"), 6))
           p.setBrush(Qt.BrushStyle.NoBrush)
           for angle in range(0, 360, 30):
@@ -129,18 +130,15 @@ jobs:
               p.drawLine(QPointF(0, -66), QPointF(0, -56))
               p.restore()
 
-          # Clock hands (25 minutes ~ 150°)
           p.setPen(QPen(QColor("#1E293B"), 10, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
           p.drawLine(QPointF(128, 128), QPointF(128, 74))
           p.setPen(QPen(QColor("#E8483F"), 8, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
           p.drawLine(QPointF(128, 128), QPointF(176, 128))
 
-          # Center dot
           p.setPen(Qt.PenStyle.NoPen)
           p.setBrush(QColor("#1E293B"))
           p.drawEllipse(QPointF(128, 128), 9, 9)
 
-          # Stem / leaf
           p.setPen(QPen(QColor("#2E7D32"), 10, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
           p.drawLine(QPointF(128, 30), QPointF(128, 8))
           p.setBrush(QColor("#43A047"))
@@ -149,7 +147,6 @@ jobs:
 
           p.end()
 
-          # Save a single canonical 256x256 PNG used by both .deb and AppImage
           img.save("pomotime.png", "PNG")
           with open("pomotime.png", "rb") as fh:
               head = fh.read(8)

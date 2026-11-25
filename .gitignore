@@ -12,3 +12,12 @@ venv/
 
 # OS-generated files
 .DS_Store
+
+# Built distributables
+*.AppImage
+*.deb
+pomotime.png
+
+# Test caches
+.pytest_cache/
+.mypy_cache/
